@@ -13,7 +13,7 @@
 
 
 # Objective
-- Code, simulate and implement to FPGA kit a BIN to 7seg decoder to control 7 LED
+- Code, simulate and implement to FPGA kit a BIN to 7seg decoder to control 4 7-seg LEDs by 16 bit input signal from switches
     - Using HDL (Verilog) to describe BIN to 7seg decoder module
     - USing Questasim to stimulate
     - Using Vovaldo to implement to FPGA
