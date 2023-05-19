@@ -91,8 +91,9 @@ With the working library created, you are ready to compile your source files eit
    - Select **View > Wave** or enter ```view wave``` at the command line
    - Add signals to Wave window by slect the *sim* tab, right-click *test_counter* to open a popup then select **Add > To Wave > All items in region**
    - Run the simulation by click the **Run** icon (the default simulation length = 100ns)
-       - Enter ```run 500`` at *VSIM prompt* in main window to simulate advamces another 500ns
+       - Enter ```run 500`` at *VSIM prompt* in main window to simulate advances another 500ns
        - Click **Run -All** icon to stimulate until you execute a break (command or click **Break** icon)
+       - Press "H" keybind to shorten parameter/input/output name
   
 ---
 ## Design and testbench module
