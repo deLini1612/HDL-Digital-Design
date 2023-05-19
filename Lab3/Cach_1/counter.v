@@ -9,6 +9,12 @@ module counter #(
     output reg carry_out = 0
 );
     
+    reg [NUMBER_OF_BIT-1:0] cnt_next;
+    always @(cnt or ce) begin
+        cnt_next = cnt + ce;
+        carry_out = (cnt==RST_VALUE - 1)&(cnt_next == RST_VALUE);
+    end
+
     always @(posedge clk or negedge glob_rst_n) begin
         if (~glob_rst_n) cnt <= RST_INIT;
         else 
@@ -23,9 +29,5 @@ module counter #(
             else begin
                 cnt <= cnt;
             end
-    end
-
-    always @(posedge clk or negedge glob_rst_n) begin
-        carry_out = ((cnt==RST_VALUE-2)&(ce))?1:0;
     end
 endmodule
