@@ -5,14 +5,12 @@ module counter #(
     parameter RST_VALUE
 ) (
     input clk, ce, glob_rst_n,
-    output reg [NUMBER_OF_BIT-1:0] cnt = RST_INIT,
-    output reg carry_out = 0
+    output reg [NUMBER_OF_BIT-1:0] cnt,
+    output reg carry_out
 );
     
-    reg [NUMBER_OF_BIT-1:0] cnt_next;
     always @(cnt or ce) begin
-        cnt_next = cnt + ce;
-        carry_out = (cnt==RST_VALUE - 1)&(cnt_next == RST_VALUE);
+        carry_out = (cnt==RST_VALUE - 1)&ce;
     end
 
     always @(posedge clk or negedge glob_rst_n) begin

@@ -15,11 +15,10 @@ module tb_cnt_dis_year ();
         .is_leap(is_leap)
     );
 
+
     // Generate clk 1Hz
     initial begin
 		clk = 1;
-        glob_rst_n = 1;
-
 		repeat(8000) #5 clk = ~clk;
 	end
 
@@ -27,6 +26,12 @@ module tb_cnt_dis_year ();
     initial begin
 		ce = 1;
 		repeat(2000) #20 ce = $random;
+	end
+
+      
+    initial begin
+	    glob_rst_n = 0;
+        #10 glob_rst_n = 1;
 	end
 
 endmodule

@@ -22,9 +22,13 @@ module tb_clock_top_module ();
     // Generate input clock
     initial begin
         built_in_clk = 1;
-        glob_rst_n = 1;
         // f = 50MHz -> T = 20ns
         forever #10 built_in_clk = ~built_in_clk;
+    end
+
+    initial begin
+        glob_rst_n = 0;
+        #20 glob_rst_n = 1;
     end
 
 endmodule

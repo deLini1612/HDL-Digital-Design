@@ -6,10 +6,6 @@ module cnt_dis_year (
 );
     reg [3:0] cnt3, cnt2, cnt1, cnt0;
 
-    initial begin
-        {cnt0, cnt1, cnt2, cnt3} = 16'h0000;
-    end
-
     always @(posedge clk or negedge glob_rst_n) begin
         if (~glob_rst_n) begin cnt0 <= 0; cnt1 <= 0; cnt2 <= 0; cnt3 <= 0;
         end

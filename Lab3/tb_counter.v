@@ -16,13 +16,17 @@ module tb_counter ();
 	initial
 	begin
 		clk = 1;
-        glob_rst_n = 1;
 		repeat(800) #5 clk = ~clk;
 	end
 
 	initial begin
 		ce = 1;
 		repeat(200) #20 ce = $random;
+	end
+
+    initial begin
+	    glob_rst_n = 0;
+        #10 glob_rst_n = 1;
 	end
 
 endmodule

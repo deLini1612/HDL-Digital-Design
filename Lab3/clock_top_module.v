@@ -8,15 +8,6 @@ module clock_top_module (
     output [6:0] seg0_y, seg1_y, seg2_y, seg3_y
 );
 
-    // initial begin
-    //     {seg1_s, seg0_s} = 14'b0000001_0000001;
-    //     {seg1_mi, seg0_mi} = 14'b0000001_0000001;
-    //     {seg1_h, seg0_h} = 14'b0000001_1001111;
-    //     {seg1_d, seg0_d} = 14'b0000001_1001111;
-    //     {seg1_mo, seg0_mo} = 14'b00000011_001111;
-    //     {seg0_y, seg1_y, seg2_y, seg3_y} = 28'b0000001_0000001_0000001_0000001;
-    // end
-
     wire clk, is_leap;
     wire [4:0] carry_out;
 
