@@ -23,7 +23,7 @@ module count_day(
     end
 
     always @(posedge clk or negedge glob_rst_n) begin
-        carry_out = ((cnt==RST_VALUE)&(ce))?1:0;
+        carry_out = ((cnt==RST_VALUE)&&(ce))?1:0;
     end
 endmodule
 
@@ -56,7 +56,7 @@ module cnt_dis_day (
         .carry_out(carry_out)
     );
 
-    seg_hour dis_day(
+    seg_day dis_day(
         .value(cnt),
         .seg0(seg0),
         .seg1(seg1)

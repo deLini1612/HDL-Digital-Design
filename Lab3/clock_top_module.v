@@ -47,7 +47,7 @@ module clock_top_module (
 
     cnt_dis_day day (
         .seg0_mon(seg0_mo),
-        .seg1_mon(seg0_mo),
+        .seg1_mon(seg1_mo),
         .is_leap(is_leap),
         .clk(clk),
         .ce(carry_out[2]),
