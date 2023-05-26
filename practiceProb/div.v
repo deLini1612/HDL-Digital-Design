@@ -8,7 +8,7 @@ module div #(
     input start,                 //control bit: start calculation
     output reg [WIDTH-1:0] res, //max length of res is len(a) - len(b) + 1
     output reg [WIDTH-1:0] mod, //max length of remainder is len(b)
-    output reg cal,                  //control bit: dong calculation
+    output reg cal,                  //control bit: doing calculation
     output reg done                  //control bit: done calculation
 );
 

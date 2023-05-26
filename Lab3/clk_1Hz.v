@@ -8,7 +8,7 @@ module clk_1Hz #(
 );
 
 reg[26:0] counter=27'd0;
-always @(negedge built_in_clk)
+always @(posedge built_in_clk)
 begin
     counter <= counter + 27'd1;
     if(counter>=(DIVISOR-1))
