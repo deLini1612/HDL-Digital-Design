@@ -9,13 +9,14 @@ module datapath #(
     output request_i,               // = 1 if has request at floor i (i is current floor)
     output request_j_gt_i,          // = 1 if has request at floor j > i (i is current floor)
     output request_j_lt_i,          // = 1 if has request at floor j < i (i is current floor)
+    output reg [n-1:0] request,
     output reg [n-1:0] i                // current floor one-hot encode
 );
 
-    reg [n-1:0] request, next_request;
+    reg [n-1:0] next_request;
 
     // determine request -> not clk
-    always @(button_out or button_in or open) begin
+    always @(button_out or button_in or open or request) begin
         if (open) begin
             //has open signal -> clear request at current (i-th) floor -> and ~(i)
             next_request = (request | (~button_in) |  (~button_out)) & (~i);
@@ -32,8 +33,12 @@ module datapath #(
 		end
 		else begin
             request <= next_request;
-			if (up) if (i[n-1]==0) i <= (i<<1);
-			else if (down) if (i[0]!=1) i <= (i>>1);
+			if (up) begin 
+                if (i[n-1]==0) i <= (i<<1);
+            end
+			else begin
+                if (down) if (i[0]==0) i <= (i>>1);
+            end
 		end
 	end
 

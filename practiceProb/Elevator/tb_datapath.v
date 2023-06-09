@@ -24,7 +24,6 @@ module tb_datapath ();
         .i(i)
     );
 
-
     initial begin
         clk = 0;
         repeat(30) #10 clk = ~clk;
@@ -41,12 +40,25 @@ module tb_datapath ();
         button_in = 5'b11111;
         #50;
         button_out = 5'b11010;
-        button_in = 5'b11111;
         #20;
         button_out = 5'b11111;
-        button_in = 5'b11111;
     end
 
+    // initial up, down
     initial begin
+        up = 0;
+        down = 0;
+        #50;
+        #80 up = 1;
+        #40 up = 0;
+    end
+
+    // initial open
+    initial begin
+        open = 0;
+        #70 open = 1;
+        #20 open = 0;
+        #80 open = 1;
+        #20 open = 0;
     end
 endmodule

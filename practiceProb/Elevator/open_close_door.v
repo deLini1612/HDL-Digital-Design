@@ -1,19 +1,19 @@
 module open_close_door #(
-    parameter TIME = 4      //open door and wait TIME (s) until close door
+    parameter TIME,      //open door and wait TIME (s) until close door
+    parameter WIDTH
 ) (
     input clk, rst_n,
     input open,
-    output reg close_n
+    output reg close
 );
 
-    reg [$clog2(TIME+1) -1 :0] timer, next_timer;
+    reg [WIDTH -1 :0] timer, next_timer;
     reg done;   //done 1 time open and close
+    reg openning;
 
     always @(posedge clk or negedge rst_n) begin
         if (~rst_n) begin
-            close_n <= 1;
-            timer <= 0;
-            done <= 0;        
+            timer <= 0;       
         end
         else
             timer <= next_timer; 
@@ -21,23 +21,29 @@ module open_close_door #(
     
     always @(open or timer) begin
         next_timer = 0;
+		done = 0;
+        close = 0;
         if (open) begin     //start count
-            timer = 0;
-            close_n = 1;
+            next_timer = 0;
+            close = 1;
             done = 0;
+            openning = 1;
         end
-        else if (~done) begin
+        else if(openning) begin
             if (timer == TIME) begin  //done
                 next_timer = 0;
                 done = 1;
-                close_n = 1;
+                close = 1;
+                openning = 0;
             end
             else begin //openning and count
                 next_timer = timer +1;
-                close_n = 0;
+                close = 0;
                 done = 0;
+                openning = 1;
             end
         end
+        else close = 1;
     end
 
 endmodule

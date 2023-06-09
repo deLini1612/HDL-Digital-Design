@@ -2,19 +2,19 @@ module tb_open_close_door ();
 
     reg clk, rst_n;
     reg open;
-    wire close_n;
+    wire close;
 
-    open_close_door #(.TIME(4)) duv 
+    open_close_door #(.TIME(3), .WIDTH(2)) duv 
     (
         .clk(clk),
         .rst_n(rst_n),
         .open(open),
-        .close_n(close_n)
+        .close(close)
     );
 
     initial begin
         clk = 0;
-        repeat(1000) #10 clk = ~clk;
+        repeat(2000) #10 clk = ~clk;
     end
     
     initial begin
