@@ -1,51 +1,46 @@
 module elevator #(
-    parameter n = 10
+    parameter TIME = 4,
+    parameter n = 10        //number of floors
 ) (
-    input [n-1:0] button_up,        // nut yeu cau di len ngoai thang may
-    input [n-1:0] button_down,      // nut yeu cau di xuong ngoai thang may
-    input [n-1:0] button_floor, // nut chon tang ben trong thang may
-    output open, close, go_up, go_down, //cac nut dieu khien dong, mo, di len, di xuong
-    output [$clog2(n)-1:0] floor_number
+    input clk, rst_n,
+    input [n-1:0] button_out; // nut yeu cau di len/xuong ngoai thang may
+    input [n-1:0] button_in;  // nut chon tang ben trong thang may
+    output open, close_n, up, down,   //cac nut dieu khien dong, mo, di len, di xuong
+    output [n-1:0] current_floor
 );
     datapath #(.n(n)) dp
     (
         .clk(clk),
         .rst_n(rst_n),
-        .button_up(button_up),
-        .button_down(button_down),
-        .button_floor(button_floor),
+        .open(open),
         .up(up),
         .down(down),
+        .button_out(button_out),
+        .button_in(button_in),
         .request_i(request_i),
         .request_j_gt_i(request_j_gt_i),
-        .request_j_lt_i(request_j_lt_i)
+        .request_j_lt_i(request_j_lt_i),
+        .i(current_floor)
+    );
+
+    open_close_door #(.TIME(TIME)) open_close
+    (
+        .clk(clk),
+        .rst_n(rst_n),
+        .open(open),
+        .close_n(close_n)
     );
 
     control mainFSM
     (
         .clk(clk),
         .rst_n(rst_n),
-        .close(close),
-        .open(open),
-        .up(up),
-        .down(down),
         .request_i(request_i),
         .request_j_gt_i(request_j_gt_i),
-        .request_j_lt_i(request_j_lt_i)
+        .request_j_lt_i(request_j_lt_i),
+        .open(open),
+        .close_n(close_n),
+        .up(up),
+        .down(down)
     );
-endmodule
-
-module control (
-    //ports
-);
-    
-    localparam  s_stop = 0,
-                s_up = 1,
-                s_down = 2;
-
-    reg [1:0] state, nstate;
-
-    always @(state, request_i, request_j_gt_i, request_j_lt_i) begin
-        
-    end
 endmodule
