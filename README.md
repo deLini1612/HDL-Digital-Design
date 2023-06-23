@@ -17,3 +17,4 @@ Tools and related resources:
    - CRA 8 bits
 3. Code, simulate and implement a century digital clock (displayed by 7-seg LEDs)
 4. Code, simulate and implement a ***Traffic Light Highway - Country Control System*** (see [Lab4 report](./Lab4/Lab4_Report.pdf) for details)
+5. Code to simulate UART (universal asynchronous receiver-transmitter) protocol with simple structure connect 2 UART together
