@@ -19,6 +19,42 @@ module UART #(
     ouput           frame_err
 );
 
+    wire enable;
+    
+    clk_div #(
+        .DIV_VAL(SYS_FREQ/(BAUD_RATE*16)),
+        .DIV_POS(SYS_FREQ/(BAUD_RATE*16) - 1)
+    ) gen_enable_tick (
+        .clk(clk),
+        .rst_n(rst_n),
+        .enable(1),
+        .tick(enable),
+        .clear(0)
+    );
 
 
+    Tx #(
+        .SAMPLE(SAMPLE)
+    ) transmiter (
+        .clk(clk),
+        .rst_n(rst_n),
+        .enable(enable),
+        .send_req(send_req),
+        .d_in(d_in),
+        .tx_ready(tx_ready),
+        .Tx(Tx)
+    );
+
+    Rx #(
+        .SAMPLE(SAMPLE)
+    )duv (
+        .clk(clk),
+        .rst_n(rst_n),
+        .enable(enable),
+        .Rx(Rx),
+        .d_out_valid(d_out_valid),
+        .d_out(d_out),
+        .parity_err(parity_err),
+        .frame_err(frame_err)
+    );
 endmodule

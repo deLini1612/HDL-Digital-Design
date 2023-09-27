@@ -2,7 +2,7 @@
 module tb_Rx();
 
     reg clk, rst_n;
-wire enable;
+    wire enable;
     reg Rx;
     wire d_out_valid, parity_err, frame_err;
     wire [7:0] d_out;
