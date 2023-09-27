@@ -1,32 +1,33 @@
 // Tx of UART
-module Tx 
+module Rx 
 # (
     parameter SAMPLE = 16
 )(
     input               clk,
     input               rst_n,
     input               enable,
-    input       [7:0]   d_in,
-    input               send_req,
-    output reg          tx_ready,   // = 1: transmitter is available
-    output              Tx
+    input               Rx,
+    output  [7:0]       d_out,
+    output              d_out_valid,    // = 1: d_out is valid
+    output              parity_err,
+    output              frame_err
 );
 
     localparam FRAME_SIZE = 11;
     
     // signal declaration
-    reg [1:0]                           state, next_state;
-    reg [FRAME_SIZE - 1:0]              tx_shift_reg;
+    reg                                 state, next_state;
+    reg [FRAME_SIZE - 1:0]              rx_buff_reg;
     reg [$clog2(FRAME_SIZE+1) -1: 0]    count_bit_val;
     reg                                 frame_done;
-    reg                                 load_tx_shift_reg;
-    reg                                 shift;
+    reg                                 save_bit;
     reg                                 count_bit_en;
     reg                                 clk_div_clr;
-    wire                                sym_tick;
-    wire                                parity_val;
+    wire                                sample_tick;
+    wire                                temp_parity_err;
+    wire                                bit_begin;
     
-    //=========================SYMBOL TICK GEN=========================
+    //=========================SAMPLE TICK GEN=========================
     clk_div #(
         .DIV_VAL(SAMPLE),
         .DIV_POS(SAMPLE/2 -1)
@@ -34,7 +35,7 @@ module Tx
         .clk(clk),
         .rst_n(rst_n),
         .enable(enable),
-        .tick(sym_tick),
+        .tick(sample_tick),
         .clear(clk_div_clr)
     );
     //===============================================================
@@ -46,7 +47,7 @@ module Tx
             frame_done <= 0;
         end
         else begin
-            if (count_bit_en && sym_tick) begin
+            if (count_bit_en && sample_tick) begin
                 if (count_bit_val == FRAME_SIZE -1) begin
                     count_bit_val <= 0;
                     frame_done <= 1;
@@ -64,15 +65,26 @@ module Tx
     end
     //===============================================================
 
-    //=========================CAL PARITY=========================
-    assign parity_val = ^d_in[7:0];
+    //=========================ERROR FLAG=========================
+    assign temp_parity_err = ((^rx_buff_reg[9:2])==rx_buff_reg[1])?0:1;
+    assign parity_err = frame_done & temp_parity_err;
+    assign frame_err = frame_done & (~rx_buff_reg[0]);
+    //assign d_out_valid = frame_done & (~temp_parity_err) & (~rx_buff_reg[0])
+    assign d_out_valid = frame_done;
+    //===============================================================
+
+    //=========================BIT BEGIN=========================
+    detect_edge detect (
+        .clk(clk), .rst_n(rst_n),
+        .in(Rx),
+        .change(bit_begin)
+    );
     //===============================================================
 
     //=========================CONTROL FSM=========================
     // state encoding
-    localparam  IDLE = 2'b00,
-                SET_UP = 2'b01,
-                SENDING = 2'b10;
+    localparam  IDLE = 2'b0,
+                RECEIVING = 2'b1;
 
     // state register
 	always @(posedge clk or negedge rst_n) begin
@@ -85,48 +97,30 @@ module Tx
 	end
 
     // next-state logic and output logic
-	always @(state, send_req, sym_tick, frame_done)
+	always @(state, sample_tick, frame_done, bit_begin, enable)
 	begin
-        load_tx_shift_reg = 0;
-        tx_ready = 1;
         count_bit_en = 0;
         clk_div_clr = 0;
-        shift = 0;
+        save_bit = 0;
 		case (state)
             IDLE:
             begin
-                load_tx_shift_reg = 0;
-                tx_ready = 1;
                 count_bit_en = 0;
                 clk_div_clr = 1;
-                shift = 0;
+                save_bit = 0;
 
-                if (send_req) next_state = SET_UP;
+                if (bit_begin) next_state = RECEIVING;
                 else next_state = IDLE;
             end
 
-            SET_UP:
+            RECEIVING:
             begin
-                load_tx_shift_reg = 1;
-                tx_ready = 0;
-                count_bit_en = 0;
-                clk_div_clr = 0;
-                shift = 0;
-
-                if (sym_tick) next_state = SENDING;
-                else next_state = SET_UP;
-            end
-
-            SENDING:
-            begin
-                load_tx_shift_reg = 0;
-                tx_ready = 0;
                 count_bit_en = 1;
                 clk_div_clr = 0;
-                shift = sym_tick;
+                save_bit = sample_tick;
                 
                 if (frame_done) next_state = IDLE;
-                else next_state = SENDING;
+                else next_state = RECEIVING;
             end
 
             default: next_state = state;
@@ -134,22 +128,20 @@ module Tx
 	end
     //===============================================================
 
-    //====================DATAPATH: TX SHIFT REG====================
+    //====================DATAPATH: RX BUFFER REG====================
     always @(posedge clk or negedge rst_n) begin
         if (~rst_n) begin
-            tx_shift_reg <= {(FRAME_SIZE){1'b1}};
+            rx_buff_reg <= {(FRAME_SIZE){1'b1}};
         end
         else begin
-            if (load_tx_shift_reg) begin
-                tx_shift_reg <= {1'b0, d_in, parity_val, 1'b1};
+            if (save_bit) begin
+                rx_buff_reg <= {rx_buff_reg[FRAME_SIZE - 2:0], Rx};
             end
-            else if (shift) begin
-                tx_shift_reg <= {tx_shift_reg[9:0], 1'b1};
-            end
+            else rx_buff_reg <= rx_buff_reg;
         end
     end
 
-    assign Tx = count_bit_en?tx_shift_reg[10]:1;
+    assign d_out = rx_buff_reg[FRAME_SIZE-2:2];
     //===============================================================
 
 
