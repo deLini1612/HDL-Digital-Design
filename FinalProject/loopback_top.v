@@ -1,8 +1,5 @@
-module loopback_top #(
-    parameter SYS_FREQ      =   50000000,
-    parameter BAUD_RATE     =   9600,
-    parameter SAMPLE        =   16
-) (
+module loopback_top
+(
     input   clk,
     input   rst_n,
     input   Rx,
@@ -14,6 +11,10 @@ module loopback_top #(
 
     wire    [7:0]   data;
     wire            valid;
+
+    localparam SYS_FREQ      =   50000000;
+    localparam BAUD_RATE     =   9600;
+    localparam SAMPLE        =   16;
 
     UART #(
         .SYS_FREQ(SYS_FREQ),

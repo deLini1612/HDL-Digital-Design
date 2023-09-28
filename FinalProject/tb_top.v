@@ -4,11 +4,7 @@ module tb_top();
     reg clk, rst_n, Rx;
     wire Tx, parity_err, frame_err, tx_ready;
 
-    loopback_top #(
-        .SYS_FREQ(160000000),
-        .BAUD_RATE(1000000),
-        .SAMPLE(16)
-    ) duv (
+    loopback_top duv (
         .clk(clk),
         .rst_n(rst_n),
         .Rx(Rx),
