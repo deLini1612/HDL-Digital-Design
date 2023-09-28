@@ -2,8 +2,6 @@
 module UART #(
     parameter SYS_FREQ      =   50000000,
     parameter BAUD_RATE     =   9600,
-    parameter DATA_SIZE     =   8,
-    parameter STOP_SIZE     =   1,
     parameter SAMPLE        =   16
 )(
     input           clk,
@@ -16,10 +14,14 @@ module UART #(
     output          d_out_valid,    // = 1: d_out is valid
     output  [7:0]   d_out,
     output          parity_err,
-    ouput           frame_err
+    output          frame_err
 );
 
-    wire enable;
+    wire    enable;
+    reg     Rx_meta;
+    reg     Rx_synced;
+    wire Rx_debounced;
+
     
     clk_div #(
         .DIV_VAL(SYS_FREQ/(BAUD_RATE*16)),
@@ -45,13 +47,29 @@ module UART #(
         .Tx(Tx)
     );
 
+    //================AVOID DOMAIN CROSSING================
+    always @(posedge clk) begin
+        Rx_meta <= Rx;
+        Rx_synced <= Rx_meta;
+    end
+    //=====================================================
+
+    debouncer #(
+        .LATENCY(3)
+    ) rx_debouncer (
+        .clk(clk),
+        .rst_n(rst_n),
+        .signal_in(Rx_synced),
+        .debouned_signal(Rx_debounced)
+    );
+
     Rx #(
         .SAMPLE(SAMPLE)
     )duv (
         .clk(clk),
         .rst_n(rst_n),
         .enable(enable),
-        .Rx(Rx),
+        .Rx(Rx_debounced),
         .d_out_valid(d_out_valid),
         .d_out(d_out),
         .parity_err(parity_err),

@@ -18,7 +18,7 @@ module Tx
     reg [1:0]                           state, next_state;
     reg [FRAME_SIZE - 1:0]              tx_shift_reg;
     reg [$clog2(FRAME_SIZE+1) -1: 0]    count_bit_val;
-    reg                                 frame_done;
+    reg                                 stop_bit;
     reg                                 load_tx_shift_reg;
     reg                                 shift;
     reg                                 count_bit_en;
@@ -26,6 +26,11 @@ module Tx
     wire                                sym_tick;
     wire                                parity_val;
     
+    // state encoding
+    localparam  IDLE = 2'b00,
+                SET_UP = 2'b01,
+                SENDING = 2'b10,
+                STOP = 2'b11;
     //=========================SYMBOL TICK GEN=========================
     clk_div #(
         .DIV_VAL(SAMPLE),
@@ -43,22 +48,30 @@ module Tx
     always @(posedge clk or negedge rst_n) begin
         if (~rst_n) begin
             count_bit_val <= 0;
-            frame_done <= 0;
+            stop_bit <= 0;
         end
         else begin
-            if (count_bit_en && sym_tick) begin
-                if (count_bit_val == FRAME_SIZE -1) begin
+		    if (state == SET_UP) begin
+                count_bit_val <= 0;
+                stop_bit <= 0;
+            end
+            else if (count_bit_en && sym_tick) begin
+                if (count_bit_val == FRAME_SIZE -2) begin
+                    count_bit_val <= count_bit_val + 1;
+                    stop_bit <= 1;                   
+                end
+                else if (count_bit_val == FRAME_SIZE -1) begin
                     count_bit_val <= 0;
-                    frame_done <= 1;
+                    stop_bit <= 0;
                 end
                 else begin
                     count_bit_val <= count_bit_val + 1;
-                    frame_done <= 0;
+                    stop_bit <= 0;
                 end
             end
             else begin
                 count_bit_val <= count_bit_val;
-                frame_done <= 0;
+                stop_bit <= 0;
             end
         end
     end
@@ -69,10 +82,7 @@ module Tx
     //===============================================================
 
     //=========================CONTROL FSM=========================
-    // state encoding
-    localparam  IDLE = 2'b00,
-                SET_UP = 2'b01,
-                SENDING = 2'b10;
+
 
     // state register
 	always @(posedge clk or negedge rst_n) begin
@@ -85,7 +95,7 @@ module Tx
 	end
 
     // next-state logic and output logic
-	always @(state, send_req, sym_tick, frame_done)
+	always @(state, send_req, sym_tick, stop_bit)
 	begin
         load_tx_shift_reg = 0;
         tx_ready = 1;
@@ -125,8 +135,20 @@ module Tx
                 clk_div_clr = 0;
                 shift = sym_tick;
                 
-                if (frame_done) next_state = IDLE;
+                if (stop_bit) next_state = STOP;
                 else next_state = SENDING;
+            end
+
+            STOP:
+            begin
+                load_tx_shift_reg = 0;
+                tx_ready = 1;
+                count_bit_en = 1;
+                clk_div_clr = 1;
+                shift = sym_tick;
+                if (send_req) next_state = SET_UP;
+                else if(sym_tick) next_state = IDLE;
+                else next_state = STOP;
             end
 
             default: next_state = state;
