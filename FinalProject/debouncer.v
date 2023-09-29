@@ -13,7 +13,7 @@ module debouncer #(
     wire                        output_set;
     wire                        output_clr;
 
-    always @(posedge clk or rst_n) begin
+    always @(posedge clk or negedge rst_n) begin
         if (~rst_n) begin
             input_shift_reg <= {(SHIFT_REG_WIDtH){1'b1}};
         end
@@ -25,7 +25,7 @@ module debouncer #(
     assign output_clr = ~(|input_shift_reg[SHIFT_REG_WIDtH - 1:0]);
     assign output_set = &input_shift_reg[SHIFT_REG_WIDtH - 1:0];
 
-    always @(posedge clk or rst_n) begin
+    always @(posedge clk or negedge rst_n) begin
         if (~rst_n) begin
             debouned_signal <= 1;
         end
